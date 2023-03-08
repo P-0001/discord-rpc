@@ -1,7 +1,13 @@
 import { Client } from "../src/index";
 
 const client = new Client({
-    clientId: "123456789012345678"
+    clientId: process.env["CLIENT_ID"] || "123456789012345678",
+    transport: {
+        throwConnectError: false,
+        onError: function (err) {
+            console.error("onError", err);
+        }
+    }
 });
 
 client.on("ready", async () => {
@@ -13,5 +19,13 @@ client.on("ready", async () => {
         largeImageText: "me irl"
     });
 });
+async function start() {
+    try {
+        // using connect instead of login becurse no login scope
+        await client.connect();
+    } catch (e) {
+        console.error("catch", e);
+    }
+}
 
-client.login();
+start();

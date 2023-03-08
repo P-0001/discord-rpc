@@ -17,6 +17,8 @@ export type FormatFunction = (id: number) => [path: string, skipCheck?: boolean]
 
 export type IPCTransportOptions = {
     pathList?: FormatFunction[];
+    throwConnectError?: boolean;
+    onError?: (err: any) => any;
 } & TransportOptions;
 
 const defaultPathList: FormatFunction[] = [
@@ -88,6 +90,7 @@ export class IPCTransport extends Transport {
     pathList: FormatFunction[] = defaultPathList;
 
     private socket?: net.Socket;
+    private options: IPCTransportOptions;
 
     get isConnected() {
         return this.socket != undefined && this.socket.readyState === "open";
@@ -97,9 +100,13 @@ export class IPCTransport extends Transport {
         super(options);
 
         this.pathList = options.pathList ?? this.pathList;
+
+        this.options = options;
+        this.options.throwConnectError =
+            typeof this.options.throwConnectError === "undefined" ? true : this.options.throwConnectError;
     }
 
-    private async getSocket(): Promise<net.Socket> {
+    private async getSocket(): Promise<net.Socket | undefined> {
         if (this.socket) return this.socket;
 
         const pathList = this.pathList;
@@ -137,7 +144,11 @@ export class IPCTransport extends Transport {
                     }
                 }
             }
-
+            if (this.options.onError) {
+                console.log("here");
+                this.options.onError(new RPCError(CUSTOM_RPC_ERROR_CODE.RPC_COULD_NOT_CONNECT, "Could not connect"));
+                return;
+            }
             reject(new RPCError(CUSTOM_RPC_ERROR_CODE.RPC_COULD_NOT_CONNECT, "Could not connect"));
         });
     }
@@ -146,10 +157,18 @@ export class IPCTransport extends Transport {
         if (!this.socket) {
             let failed;
             this.socket = await this.getSocket().catch((err) => {
+                if (this.options.throwConnectError !== false) {
+                    throw err;
+                }
                 failed = err;
                 return undefined;
             });
             if (failed || !this.socket) {
+                if (this.options?.onError) {
+                    this.options.onError(failed || "no socket");
+                    this.close();
+                    return;
+                }
                 return Promise.reject(failed || "no socket");
             }
         }

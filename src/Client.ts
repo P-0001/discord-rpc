@@ -1,8 +1,6 @@
 import type { APIApplication, OAuth2Scopes } from "discord-api-types/v10";
 import { type FormatFunction, IPCTransport } from "./transport/IPC";
-import axios, { type AxiosResponse, type Method } from "axios";
-import got, { type OptionsInit, Response } from "got";
-import { WebSocketTransport } from "./transport/WebSocket";
+import got, { type Options, type Response, type Method } from "got";
 import type { TypedEmitter } from "./utils/TypedEmitter";
 import { ClientUser } from "./structures/ClientUser";
 import { RPCError } from "./utils/RPCError";
@@ -45,11 +43,15 @@ export interface ClientOptions {
         /**
          * transport type
          */
-        type?: "ipc" | "websocket" | { new (options: TransportOptions): Transport };
+        type?: "ipc";
         /**
          * ipc transport's path list
          */
         pathList?: FormatFunction[];
+
+        throwConnectError?: boolean;
+
+        onError?: (err: any) => any
     };
 }
 
@@ -133,15 +135,12 @@ export class Client extends (EventEmitter as new () => TypedEmitter<ClientEvents
 
         this.pipeId = options.pipeId;
 
-        this.transport =
-            options.transport && options.transport.type && options.transport.type != "ipc"
-                ? options.transport.type === "websocket"
-                    ? new WebSocketTransport({ client: this })
-                    : new options.transport.type({ client: this })
-                : new IPCTransport({
-                      client: this,
-                      pathList: options.transport?.pathList
-                  });
+        this.transport = new IPCTransport({
+            client: this,
+            pathList: options?.transport?.pathList,
+            throwConnectError:
+                typeof options?.transport?.throwConnectError === "boolean" ? options.transport.throwConnectError : true
+        });
 
         this.transport.on("message", (message) => {
             if (message.cmd === "DISPATCH" && message.evt === "READY") {
@@ -179,7 +178,7 @@ export class Client extends (EventEmitter as new () => TypedEmitter<ClientEvents
     ): Promise<Response<unknown> & { data: any }> {
         const url = new URL(`https://discord.com/api${path}`);
         if (req?.query) for (const [key, value] of req.query) url.searchParams.append(key, value);
-        const options: OptionsInit = {
+        const options: Options = {
             url,
             method: method.toUpperCase() as any,
             headers: {

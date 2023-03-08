@@ -255,6 +255,7 @@ export type TransportEvents = {
      * @event
      */
     close: (reason?: string | { code: number; message: string }) => void;
+    error: (reason: string) => void;
 };
 
 export type TransportOptions = {
