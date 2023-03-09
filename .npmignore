@@ -14,6 +14,8 @@ tsconfig.json
 .yarnrc.yml
 .prettierrc
 *.tgz
+.env
+.gitpod.yml
 
 # lockfile
 package-lock.json
