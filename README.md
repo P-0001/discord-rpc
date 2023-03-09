@@ -11,32 +11,4 @@
 
 ## About
 
-`@p-0001/discord-rpc` is a fork of [xhayper/discord-rpc](https://github.com/xhayper/discord-rpc) but I removed ws and somes errors with the purpose of not crashing the app if discord isn't open.
-
-## Example
-
-```ts
-import { Client } from "@xhayper/discord-rpc";
-
-const client = new Client({
-    clientId: "123456789012345678"
-});
-
-client.on("ready", () => {
-    client.user?.setActivity({
-        state: "Hello, world!"
-    });
-});
-
-client.login();
-```
-
-## Compatibility
-
-| OS      | Normal | snap | flatpak |
-| ------- | ------ | ---- | ------- |
-| Windows | Y      | -    | -       |
-| macOS   | Y      | -    | -       |
-| Linux   | Y      | Y    | Y       |
-
--   Linux is tested on Kubuntu 22.04
+`@p-0001/discord-rpc` is a fork of [xhayper/discord-rpc](https://github.com/xhayper/discord-rpc) but I removed ws and some errors with the purpose of not crashing the app if discord isn't open.
