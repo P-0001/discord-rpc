@@ -1,4 +1,4 @@
-import { Client } from "@xhayper/discord-rpc";
+import { Client } from "../dist";
 
 const client = new Client({
     clientId: "123456789012345678",
