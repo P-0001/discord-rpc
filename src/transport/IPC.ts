@@ -145,7 +145,6 @@ export class IPCTransport extends Transport {
                 }
             }
             if (this.options.onError) {
-                console.log("here");
                 this.options.onError(new RPCError(CUSTOM_RPC_ERROR_CODE.RPC_COULD_NOT_CONNECT, "Could not connect"));
                 return;
             }

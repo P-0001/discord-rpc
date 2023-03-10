@@ -51,7 +51,7 @@ export interface ClientOptions {
 
         throwConnectError?: boolean;
 
-        onError?: (err: any) => any
+        onError?: (err: any) => any;
     };
 }
 
@@ -138,6 +138,7 @@ export class Client extends (EventEmitter as new () => TypedEmitter<ClientEvents
         this.transport = new IPCTransport({
             client: this,
             pathList: options?.transport?.pathList,
+            onError: options.transport?.onError,
             throwConnectError:
                 typeof options?.transport?.throwConnectError === "boolean" ? options.transport.throwConnectError : true
         });
